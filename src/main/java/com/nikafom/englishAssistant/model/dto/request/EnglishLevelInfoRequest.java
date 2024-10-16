@@ -25,4 +25,5 @@ public class EnglishLevelInfoRequest {
     String speaking;
     String yes;
     String no;
+    String bla;
 }
