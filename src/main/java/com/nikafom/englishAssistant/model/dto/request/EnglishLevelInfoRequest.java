@@ -26,4 +26,5 @@ public class EnglishLevelInfoRequest {
     String yes;
     String no;
     String bla;
+    String blabla;
 }
