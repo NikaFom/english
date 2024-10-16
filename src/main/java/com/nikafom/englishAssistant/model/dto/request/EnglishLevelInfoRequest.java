@@ -23,8 +23,4 @@ public class EnglishLevelInfoRequest {
     String listening;
     String writing;
     String speaking;
-    String yes;
-    String no;
-    String bla;
-    String blabla;
 }
