@@ -19,5 +19,4 @@ public class GoalInfoRequest {
     String description;
     String type;
     LocalDate date;
-    GoalStatus status;
 }

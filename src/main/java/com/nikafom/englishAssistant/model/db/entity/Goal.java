@@ -38,4 +38,7 @@ public class Goal {
 
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
+
+    @ManyToOne
+    Student student;
 }

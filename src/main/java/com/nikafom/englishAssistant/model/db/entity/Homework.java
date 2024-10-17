@@ -35,4 +35,7 @@ public class Homework {
 
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
+
+    @ManyToOne
+    Student student;
 }

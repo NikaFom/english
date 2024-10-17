@@ -2,7 +2,8 @@ package com.nikafom.englishAssistant.model.enums;
 
 public enum HomeworkStatus {
     GIVEN,
-    RESCHEDULED,
+    CHANGED,
+    DELETED,
     DONE,
     NOT_DONE
 }

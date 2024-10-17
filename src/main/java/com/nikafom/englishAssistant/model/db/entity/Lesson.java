@@ -39,4 +39,10 @@ public class Lesson {
 
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
+
+    @ManyToOne
+    Student student;
+
+    @OneToOne
+    Homework homework;
 }

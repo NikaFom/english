@@ -18,5 +18,4 @@ public class HomeworkInfoRequest {
     @NotEmpty
     String task;
     LocalDate date;
-    HomeworkStatus status;
 }

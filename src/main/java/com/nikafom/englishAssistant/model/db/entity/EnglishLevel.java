@@ -54,4 +54,7 @@ public class EnglishLevel {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     EnglishLevelStatus status;
+
+    @ManyToOne
+    Student student;
 }

@@ -40,4 +40,7 @@ public class Student {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     StudentStatus status;
+
+    @ManyToOne
+    User user;
 }

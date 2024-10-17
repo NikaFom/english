@@ -37,4 +37,7 @@ public class Payment {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     PaymentStatus status;
+
+    @ManyToOne
+    Student student;
 }
