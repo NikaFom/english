@@ -2,8 +2,10 @@ package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikafom.englishAssistant.model.db.entity.Student;
+import com.nikafom.englishAssistant.model.db.entity.User;
 import com.nikafom.englishAssistant.model.db.repository.StudentRepository;
 import com.nikafom.englishAssistant.model.dto.request.StudentInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.StudentToUserRequest;
 import com.nikafom.englishAssistant.model.dto.response.StudentInfoResponse;
 import com.nikafom.englishAssistant.model.enums.StudentStatus;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class StudentService {
     private final ObjectMapper mapper;
     private final StudentRepository studentRepository;
+    private final UserService userService;
 
     public StudentInfoResponse createStudent(@Valid StudentInfoRequest request) {
         if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
@@ -84,6 +87,27 @@ public class StudentService {
 
     public List<StudentInfoResponse> getAllStudents() {
         return studentRepository.findAll().stream()
+                .map(student -> mapper.convertValue(student, StudentInfoResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addStudentToUser(StudentToUserRequest request) {
+        Student student = studentRepository.findById(request.getStudentId()).orElse(null);
+        if(student == null) {
+            return;
+        }
+
+        User user = userService.getUserFromDB(request.getUserId());
+        if(user == null) {
+            return;
+        }
+
+        student.setUser(user);
+        studentRepository.save(student);
+    }
+
+    public List<StudentInfoResponse> getUserStudents(Long id) {
+        return studentRepository.findAllByUserId(id).stream()
                 .map(student -> mapper.convertValue(student, StudentInfoResponse.class))
                 .collect(Collectors.toList());
     }

@@ -6,6 +6,8 @@ import com.nikafom.englishAssistant.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -46,7 +48,12 @@ public class UserController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить список пользователей")
-    public List<UserInfoResponse> getAllUsers() {
-        return userService.getAllUsers();
+    public Page<UserInfoResponse> getAllUsers(@RequestParam(defaultValue = "1") Integer page,
+                                              @RequestParam(defaultValue = "10") Integer perPage,
+                                              @RequestParam(defaultValue = "name") String sort,
+                                              @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                              @RequestParam(required = false) String filter
+    ) {
+        return userService.getAllUsers(page, perPage, sort, order, filter);
     }
 }

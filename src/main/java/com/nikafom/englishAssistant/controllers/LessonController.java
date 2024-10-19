@@ -1,6 +1,9 @@
 package com.nikafom.englishAssistant.controllers;
 
+import com.nikafom.englishAssistant.model.dto.request.HomeworkToLessonRequest;
 import com.nikafom.englishAssistant.model.dto.request.LessonInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.LessonToStudentRequest;
+import com.nikafom.englishAssistant.model.dto.response.HomeworkInfoResponse;
 import com.nikafom.englishAssistant.model.dto.response.LessonInfoResponse;
 import com.nikafom.englishAssistant.service.LessonService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,5 +49,41 @@ public class LessonController {
     @Operation(summary = "Получить список занятий")
     public List<LessonInfoResponse> getAllLessons() {
         return lessonService.getAllLessons();
+    }
+
+    @PostMapping("/lessonToStudent")
+    @Operation(summary = "Добавить занятие ученику")
+    public void addLessonToStudent(@RequestBody LessonToStudentRequest request) {
+        lessonService.addLessonToStudent(request);
+    }
+
+    @GetMapping("/studentLessons/{id}")
+    @Operation(summary = "Получить список занятий ученика по ID")
+    public List<LessonInfoResponse> getStudentLessons(@PathVariable Long id) {
+        return lessonService.getStudentLessons(id);
+    }
+
+    @PostMapping("/homeworkToLesson")
+    @Operation(summary = "Добавить домашнее задание к занятию")
+    public void addHomeworkToLesson(@RequestBody HomeworkToLessonRequest request) {
+        lessonService.addHomeworkToLesson(request);
+    }
+
+    @GetMapping("/lessonHomework/{id}")
+    @Operation(summary = "Получить домашнее задание к занятию по ID")
+    public HomeworkInfoResponse getLessonHomework(@PathVariable Long id) {
+        return lessonService.getLessonHomework(id);
+    }
+
+    @PutMapping("/givenLesson/{id}")
+    @Operation(summary = "Отметить занятие проведенным по ID")
+    public void markGivenLesson(@PathVariable Long id) {
+        lessonService.markGivenLesson(id);
+    }
+
+    @PutMapping("/paidLesson/{id}")
+    @Operation(summary = "Отметить занятие оплаченным по ID")
+    public void markPaidLesson(@PathVariable Long id) {
+        lessonService.markPaidLesson(id);
     }
 }

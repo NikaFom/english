@@ -2,16 +2,22 @@ package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikafom.englishAssistant.model.db.entity.Goal;
+import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.GoalRepository;
 import com.nikafom.englishAssistant.model.dto.request.GoalInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.GoalToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.GoalInfoResponse;
 import com.nikafom.englishAssistant.model.enums.GoalStatus;
+import com.nikafom.englishAssistant.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +27,7 @@ import java.util.stream.Collectors;
 public class GoalService {
     private final ObjectMapper mapper;
     private final GoalRepository goalRepository;
+    private final StudentService studentService;
 
     public GoalInfoResponse createGoal(GoalInfoRequest request) {
         Goal goal = mapper.convertValue(request, Goal.class);
@@ -63,9 +70,47 @@ public class GoalService {
         goalRepository.save(goal);
     }
 
-    public List<GoalInfoResponse> getAllGoals() {
-        return goalRepository.findAll().stream()
+    public Page<GoalInfoResponse> getAllGoals(Integer page, Integer perPage, String sort, Sort.Direction order, String filter) {
+        Pageable pageRequest = PaginationUtil.getPageRequest(page, perPage, sort, order);
+
+        Page<Goal> allGoals;
+        if(filter == null) {
+            allGoals = goalRepository.findAll(pageRequest);
+        } else {
+            allGoals = goalRepository.finaAllPageableFiltered(pageRequest, filter.toUpperCase());
+        }
+
+        List<GoalInfoResponse> content = allGoals.getContent().stream()
                 .map(goal -> mapper.convertValue(goal, GoalInfoResponse.class))
                 .collect(Collectors.toList());
+        return new PageImpl<>(content, pageRequest, allGoals.getTotalElements());
+    }
+
+    public void addGoalToStudent(GoalToStudentRequest request) {
+        Goal goal = goalRepository.findById(request.getGoalId()).orElse(null);
+        if(goal == null) {
+            return;
+        }
+
+        Student student = studentService.getStudentFromDB(request.getStudentId());
+        if(student == null) {
+            return;
+        }
+
+        goal.setStudent(student);
+        goalRepository.save(goal);
+    }
+
+    public List<GoalInfoResponse> getStudentGoals(Long id) {
+        return goalRepository.findAllByStudentId(id).stream()
+                .map(goal -> mapper.convertValue(goal, GoalInfoResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public void markAccomplishedGoal(Long id) {
+        Goal goal = goalRepository.findById(id).orElse(null);
+        goal.setStatus(GoalStatus.ACCOMPLISHED);
+        goal.setUpdatedAt(LocalDateTime.now());
+        goalRepository.save(goal);
     }
 }

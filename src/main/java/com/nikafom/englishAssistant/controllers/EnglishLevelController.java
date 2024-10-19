@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.controllers;
 
 import com.nikafom.englishAssistant.model.dto.request.EnglishLevelInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.LevelToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.EnglishLevelInfoResponse;
 import com.nikafom.englishAssistant.service.EnglishLevelService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,5 +47,17 @@ public class EnglishLevelController {
     @Operation(summary = "Получить список уровней английского")
     public List<EnglishLevelInfoResponse> getAllEnglishLevels() {
         return englishLevelService.getAllEnglishLevels();
+    }
+
+    @PostMapping("/englishLevelToStudent")
+    @Operation(summary = "Добавить уровень английского ученику")
+    public void addEnglishLevelToStudent(@RequestBody LevelToStudentRequest request) {
+        englishLevelService.addEnglishLevelToStudent(request);
+    }
+
+    @GetMapping("/studentEnglishLevels/{id}")
+    @Operation(summary = "Получить список уровней английского ученика по ID")
+    public List<EnglishLevelInfoResponse> getStudentEnglishLevels(@PathVariable Long id) {
+        return englishLevelService.getStudentEnglishLevels(id);
     }
 }

@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.controllers;
 
 import com.nikafom.englishAssistant.model.dto.request.PaymentInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.PaymentToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.PaymentInfoResponse;
 import com.nikafom.englishAssistant.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,5 +47,17 @@ public class PaymentController {
     @Operation(summary = "Получить список оплат")
     public List<PaymentInfoResponse> getAllPayments() {
         return paymentService.getAllPayments();
+    }
+
+    @PostMapping("/paymentToStudent")
+    @Operation(summary = "Добавить оплату ученику")
+    public void addPaymentToStudent(@RequestBody PaymentToStudentRequest request) {
+        paymentService.addPaymentToStudent(request);
+    }
+
+    @GetMapping("/studentPayments/{id}")
+    @Operation(summary = "Получить список оплат ученика по ID")
+    public List<PaymentInfoResponse> getStudentPayments(@PathVariable Long id) {
+        return paymentService.getStudentPayments(id);
     }
 }

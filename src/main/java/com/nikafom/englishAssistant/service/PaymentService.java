@@ -2,8 +2,10 @@ package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikafom.englishAssistant.model.db.entity.Payment;
+import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.PaymentRepository;
 import com.nikafom.englishAssistant.model.dto.request.PaymentInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.PaymentToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.PaymentInfoResponse;
 import com.nikafom.englishAssistant.model.enums.PaymentStatus;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class PaymentService {
     private final ObjectMapper mapper;
     private final PaymentRepository paymentRepository;
+    private final StudentService studentService;
 
     public PaymentInfoResponse createPayment(PaymentInfoRequest request) {
         Payment payment = mapper.convertValue(request, Payment.class);
@@ -65,6 +68,27 @@ public class PaymentService {
 
     public List<PaymentInfoResponse> getAllPayments() {
         return paymentRepository.findAll().stream()
+                .map(payment -> mapper.convertValue(payment, PaymentInfoResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addPaymentToStudent(PaymentToStudentRequest request) {
+        Payment payment = paymentRepository.findById(request.getPaymentId()).orElse(null);
+        if(payment == null) {
+            return;
+        }
+
+        Student student = studentService.getStudentFromDB(request.getStudentId());
+        if(student == null) {
+            return;
+        }
+
+        payment.setStudent(student);
+        paymentRepository.save(payment);
+    }
+
+    public List<PaymentInfoResponse> getStudentPayments(Long id) {
+        return paymentRepository.findAllByStudentId(id).stream()
                 .map(payment -> mapper.convertValue(payment, PaymentInfoResponse.class))
                 .collect(Collectors.toList());
     }

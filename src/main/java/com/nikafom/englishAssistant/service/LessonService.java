@@ -1,9 +1,15 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.model.db.entity.Homework;
 import com.nikafom.englishAssistant.model.db.entity.Lesson;
+import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.LessonRepository;
+import com.nikafom.englishAssistant.model.dto.request.HomeworkToLessonRequest;
+import com.nikafom.englishAssistant.model.dto.request.HomeworkToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.request.LessonInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.LessonToStudentRequest;
+import com.nikafom.englishAssistant.model.dto.response.HomeworkInfoResponse;
 import com.nikafom.englishAssistant.model.dto.response.LessonInfoResponse;
 import com.nikafom.englishAssistant.model.enums.LessonStatus;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +28,8 @@ import java.util.stream.Collectors;
 public class LessonService {
     private final ObjectMapper mapper;
     private final LessonRepository lessonRepository;
+    private final StudentService studentService;
+    private final HomeworkService homeworkService;
 
     public LessonInfoResponse createLesson(LessonInfoRequest request) {
         Lesson lesson = mapper.convertValue(request, Lesson.class);
@@ -67,5 +76,64 @@ public class LessonService {
         return lessonRepository.findAll().stream()
                 .map(lesson -> mapper.convertValue(lesson, LessonInfoResponse.class))
                 .collect(Collectors.toList());
+    }
+
+    public void addLessonToStudent(LessonToStudentRequest request) {
+        Lesson lesson = lessonRepository.findById(request.getLessonId()).orElse(null);
+        if(lesson == null) {
+            return;
+        }
+
+        Student student = studentService.getStudentFromDB(request.getStudentId());
+        if(student == null) {
+            return;
+        }
+
+        lesson.setStudent(student);
+        lessonRepository.save(lesson);
+    }
+
+    public List<LessonInfoResponse> getStudentLessons(Long id) {
+        return lessonRepository.findAllByStudentId(id).stream()
+                .map(lesson -> mapper.convertValue(lesson, LessonInfoResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addHomeworkToLesson(HomeworkToLessonRequest request) {
+        Lesson lesson = lessonRepository.findById(request.getLessonId()).orElse(null);
+        if(lesson == null) {
+            return;
+        }
+
+        Homework homework = homeworkService.getHomeworkFromDB(request.getHomeworkId());
+        if(homework == null) {
+            return;
+        }
+
+        lesson.setHomework(homework);
+        lessonRepository.save(lesson);
+    }
+
+    public HomeworkInfoResponse getLessonHomework(Long id) {
+        Lesson lesson = lessonRepository.findById(id).orElse(null);
+        if(lesson == null) {
+            return null;
+        }
+
+        return mapper.convertValue(lesson.getHomework(), HomeworkInfoResponse.class);
+    }
+
+    public void markGivenLesson(Long id) {
+        Lesson lesson = lessonRepository.findById(id).orElse(null);
+        lesson.setStatus(LessonStatus.GIVEN);
+        lesson.setUpdatedAt(LocalDateTime.now());
+        lessonRepository.save(lesson);
+    }
+
+    public void markPaidLesson(Long id) {
+        Lesson lesson = lessonRepository.findById(id).orElse(null);
+        lesson.setStatus(LessonStatus.PAID);
+        lesson.setUpdatedAt(LocalDateTime.now());
+        lessonRepository.save(lesson);
     }
 }

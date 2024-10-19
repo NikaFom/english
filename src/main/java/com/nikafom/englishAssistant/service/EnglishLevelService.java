@@ -2,8 +2,10 @@ package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikafom.englishAssistant.model.db.entity.EnglishLevel;
+import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.EnglishLevelRepository;
 import com.nikafom.englishAssistant.model.dto.request.EnglishLevelInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.LevelToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.EnglishLevelInfoResponse;
 import com.nikafom.englishAssistant.model.enums.EnglishLevelStatus;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class EnglishLevelService {
     private final ObjectMapper mapper;
     private final EnglishLevelRepository englishLevelRepository;
+    private final StudentService studentService;
 
     public EnglishLevelInfoResponse createEnglishLevel(EnglishLevelInfoRequest request) {
         EnglishLevel englishLevel = mapper.convertValue(request, EnglishLevel.class);
@@ -69,6 +73,28 @@ public class EnglishLevelService {
 
     public List<EnglishLevelInfoResponse> getAllEnglishLevels() {
         return englishLevelRepository.findAll().stream()
+                .map(englishLevel -> mapper.convertValue(englishLevel, EnglishLevelInfoResponse.class))
+                .collect(Collectors.toList());
+    }
+
+    public void addEnglishLevelToStudent(LevelToStudentRequest request) {
+        EnglishLevel englishLevel = englishLevelRepository.findById(request.getEnglishLevelId())
+                .orElse(null);
+        if(englishLevel == null) {
+            return;
+        }
+
+        Student student = studentService.getStudentFromDB(request.getStudentId());
+        if(student == null) {
+            return;
+        }
+
+        englishLevel.setStudent(student);
+        englishLevelRepository.save(englishLevel);
+    }
+
+    public List<EnglishLevelInfoResponse> getStudentEnglishLevels(Long id) {
+        return englishLevelRepository.findAllByStudentId(id).stream()
                 .map(englishLevel -> mapper.convertValue(englishLevel, EnglishLevelInfoResponse.class))
                 .collect(Collectors.toList());
     }

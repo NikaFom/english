@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.controllers;
 
 import com.nikafom.englishAssistant.model.dto.request.StudentInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.StudentToUserRequest;
 import com.nikafom.englishAssistant.model.dto.response.StudentInfoResponse;
 import com.nikafom.englishAssistant.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,5 +48,17 @@ public class StudentController {
     @Operation(summary = "Получить список учеников")
     public List<StudentInfoResponse> getAllStudents() {
         return studentService.getAllStudents();
+    }
+
+    @PostMapping("/studentToUser")
+    @Operation(summary = "Добавить ученика пользователю")
+    public void addStudentToUser(@RequestBody StudentToUserRequest request) {
+        studentService.addStudentToUser(request);
+    }
+
+    @GetMapping("/userStudents/{id}")
+    @Operation(summary = "Получить список учеников пользователя по ID")
+    public List<StudentInfoResponse> getUserStudents(@PathVariable Long id) {
+        return studentService.getUserStudents(id);
     }
 }

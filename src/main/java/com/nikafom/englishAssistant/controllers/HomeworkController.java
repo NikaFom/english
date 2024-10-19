@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.controllers;
 
 import com.nikafom.englishAssistant.model.dto.request.HomeworkInfoRequest;
+import com.nikafom.englishAssistant.model.dto.request.HomeworkToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.HomeworkInfoResponse;
 import com.nikafom.englishAssistant.service.HomeworkService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,5 +47,29 @@ public class HomeworkController {
     @Operation(summary = "Получить список домашних заданий")
     public List<HomeworkInfoResponse> getAllHomework() {
         return homeworkService.getAllHomework();
+    }
+
+    @PostMapping("/homeworkToStudent")
+    @Operation(summary = "Добавить домашнее задание ученику")
+    public void addHomeworkToStudent(@RequestBody HomeworkToStudentRequest request) {
+        homeworkService.addHomeworkToStudent(request);
+    }
+
+    @GetMapping("/studentHomework/{id}")
+    @Operation(summary = "Получить список домашних заданий ученика по ID")
+    public List<HomeworkInfoResponse> getStudentHomework(@PathVariable Long id) {
+        return homeworkService.getStudentHomework(id);
+    }
+
+    @PutMapping("/doneHomework/{id}")
+    @Operation(summary = "Отметить домашнее задание выполненным по ID")
+    public void markDoneHomework(@PathVariable Long id) {
+        homeworkService.markDoneHomework(id);
+    }
+
+    @PutMapping("/notDoneHomework/{id}")
+    @Operation(summary = "Отметить домашнее задание невыполненным по ID")
+    public void markNotDoneHomework(@PathVariable Long id) {
+        homeworkService.markNotDoneHomework(id);
     }
 }
