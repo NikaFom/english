@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.Homework;
 import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.HomeworkRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,7 +47,8 @@ public class HomeworkService {
     }
 
     public Homework getHomeworkFromDB(Long id) {
-        return homeworkRepository.findById(id).orElse(new Homework());
+        return homeworkRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Homework not found", HttpStatus.NOT_FOUND));
     }
 
     public HomeworkInfoResponse updateHomework(Long id, HomeworkInfoRequest request) {
@@ -86,15 +89,10 @@ public class HomeworkService {
     }
 
     public void addHomeworkToStudent(HomeworkToStudentRequest request) {
-        Homework homework = homeworkRepository.findById(request.getHomeworkId()).orElse(null);
-        if(homework == null) {
-            return;
-        }
+        Homework homework = homeworkRepository.findById(request.getHomeworkId())
+                .orElseThrow(() -> new CustomException("Homework not found", HttpStatus.NOT_FOUND));
 
         Student student = studentService.getStudentFromDB(request.getStudentId());
-        if(student == null) {
-            return;
-        }
 
         homework.setStudent(student);
         homeworkRepository.save(homework);
@@ -107,14 +105,16 @@ public class HomeworkService {
     }
 
     public void markDoneHomework(Long id) {
-        Homework homework = homeworkRepository.findById(id).orElse(null);
+        Homework homework = homeworkRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Homework not found", HttpStatus.NOT_FOUND));
         homework.setStatus(HomeworkStatus.DONE);
         homework.setUpdatedAt(LocalDateTime.now());
         homeworkRepository.save(homework);
     }
 
     public void markNotDoneHomework(Long id) {
-        Homework homework = homeworkRepository.findById(id).orElse(null);
+        Homework homework = homeworkRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Homework not found", HttpStatus.NOT_FOUND));
         homework.setStatus(HomeworkStatus.NOT_DONE);
         homework.setUpdatedAt(LocalDateTime.now());
         homeworkRepository.save(homework);

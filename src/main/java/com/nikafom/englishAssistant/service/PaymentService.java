@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.Payment;
 import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.PaymentRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,7 +47,8 @@ public class PaymentService {
     }
 
     public Payment getPaymentFromDB(Long id) {
-        return paymentRepository.findById(id).orElse(new Payment());
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Payment not found", HttpStatus.NOT_FOUND));
     }
 
     public PaymentInfoResponse updatePayment(Long id, PaymentInfoRequest request) {
@@ -87,15 +90,10 @@ public class PaymentService {
     }
 
     public void addPaymentToStudent(PaymentToStudentRequest request) {
-        Payment payment = paymentRepository.findById(request.getPaymentId()).orElse(null);
-        if(payment == null) {
-            return;
-        }
+        Payment payment = paymentRepository.findById(request.getPaymentId())
+                .orElseThrow(() -> new CustomException("Payment not found", HttpStatus.NOT_FOUND));
 
         Student student = studentService.getStudentFromDB(request.getStudentId());
-        if(student == null) {
-            return;
-        }
 
         payment.setStudent(student);
         paymentRepository.save(payment);

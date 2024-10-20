@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.User;
 import com.nikafom.englishAssistant.model.db.repository.UserRepository;
 import com.nikafom.englishAssistant.model.dto.request.UserInfoRequest;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -29,13 +31,17 @@ public class UserService {
     private final UserRepository userRepository;
 
     public UserInfoResponse createUser(@Valid UserInfoRequest request) {
-        if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
-            return null;
-        }
+        validatePhoneNumber(request);
+        userRepository.findByPhoneNumber(request.getPhoneNumber())
+                        .ifPresent(user -> {
+                            throw new CustomException(String.format("User with phone number: %s already exists", request.getPhoneNumber()), HttpStatus.BAD_REQUEST);
+                        });
 
-        if(!EmailValidator.getInstance().isValid(request.getEmail())) {
-            return null;
-        }
+        validateEmail(request);
+        userRepository.findByEmailIgnoreCase(request.getEmail())
+                .ifPresent(user -> {
+                    throw new CustomException(String.format("User with email: %s already exists", request.getEmail()), HttpStatus.BAD_REQUEST);
+                });
 
         User user = mapper.convertValue(request, User.class);
         user.setCreatedAt(LocalDateTime.now());
@@ -46,23 +52,31 @@ public class UserService {
         return mapper.convertValue(savedUser, UserInfoResponse.class);
     }
 
+    private void validatePhoneNumber(UserInfoRequest request) {
+        if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
+            throw new CustomException("Invalid phone number format", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private void validateEmail(UserInfoRequest request) {
+        if(!EmailValidator.getInstance().isValid(request.getEmail())) {
+            throw new CustomException("Invalid email format", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     public UserInfoResponse getUser(Long id) {
         User user = getUserFromDB(id);
         return mapper.convertValue(user, UserInfoResponse.class);
     }
 
     public User getUserFromDB(Long id) {
-        return userRepository.findById(id).orElse(new User());
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomException("User not found", HttpStatus.NOT_FOUND));
     }
 
     public UserInfoResponse updateUser(Long id, @Valid UserInfoRequest request) {
-        if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
-            return null;
-        }
-
-        if(!EmailValidator.getInstance().isValid(request.getEmail())) {
-            return null;
-        }
+        validatePhoneNumber(request);
+        validateEmail(request);
 
         User user = getUserFromDB(id);
 

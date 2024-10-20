@@ -10,9 +10,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
+    Optional<Student> findByPhoneNumber(String phoneNumber);
+
+    Optional<Student> findByEmailIgnoreCase(String email);
+
     List<Student> findAllByUserId(Long userId);
 
     Page<Student> findAllByStatusNot(Pageable request, StudentStatus status);

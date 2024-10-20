@@ -9,8 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByPhoneNumber(String phoneNumber);
+
+    Optional<User> findByEmailIgnoreCase(String email);
+
     Page<User> findAllByStatusNot(Pageable request, UserStatus status);
 
     @Query("select u from User u where u.status <> :status and (upper(u.name) like %:filter% or upper(u.email) like %:filter% or u.phoneNumber like %:filter%)")

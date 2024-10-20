@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.EnglishLevel;
 import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.EnglishLevelRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,7 +47,8 @@ public class EnglishLevelService {
     }
 
     public EnglishLevel getEnglishLevelFromDB(Long id) {
-        return englishLevelRepository.findById(id).orElse(new EnglishLevel());
+        return englishLevelRepository.findById(id)
+                .orElseThrow(() -> new CustomException("English level not found", HttpStatus.NOT_FOUND));
     }
 
     public EnglishLevelInfoResponse updateEnglishLevel(Long id, EnglishLevelInfoRequest request) {
@@ -93,15 +96,9 @@ public class EnglishLevelService {
 
     public void addEnglishLevelToStudent(LevelToStudentRequest request) {
         EnglishLevel englishLevel = englishLevelRepository.findById(request.getEnglishLevelId())
-                .orElse(null);
-        if(englishLevel == null) {
-            return;
-        }
+                .orElseThrow(() -> new CustomException("English level not found", HttpStatus.NOT_FOUND));
 
         Student student = studentService.getStudentFromDB(request.getStudentId());
-        if(student == null) {
-            return;
-        }
 
         englishLevel.setStudent(student);
         englishLevelRepository.save(englishLevel);

@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.Homework;
 import com.nikafom.englishAssistant.model.db.entity.Lesson;
 import com.nikafom.englishAssistant.model.db.entity.Student;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -49,7 +51,8 @@ public class LessonService {
     }
 
     public Lesson getLessonFromDB(Long id) {
-        return lessonRepository.findById(id).orElse(new Lesson());
+        return lessonRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Lesson not found", HttpStatus.NOT_FOUND));
     }
 
     public LessonInfoResponse updateLesson(Long id, LessonInfoRequest request) {
@@ -91,15 +94,10 @@ public class LessonService {
     }
 
     public void addLessonToStudent(LessonToStudentRequest request) {
-        Lesson lesson = lessonRepository.findById(request.getLessonId()).orElse(null);
-        if(lesson == null) {
-            return;
-        }
+        Lesson lesson = lessonRepository.findById(request.getLessonId())
+                .orElseThrow(() -> new CustomException("Lesson not found", HttpStatus.NOT_FOUND));
 
         Student student = studentService.getStudentFromDB(request.getStudentId());
-        if(student == null) {
-            return;
-        }
 
         lesson.setStudent(student);
         lessonRepository.save(lesson);
@@ -112,38 +110,33 @@ public class LessonService {
     }
 
     public void addHomeworkToLesson(HomeworkToLessonRequest request) {
-        Lesson lesson = lessonRepository.findById(request.getLessonId()).orElse(null);
-        if(lesson == null) {
-            return;
-        }
+        Lesson lesson = lessonRepository.findById(request.getLessonId())
+                .orElseThrow(() -> new CustomException("Lesson not found", HttpStatus.NOT_FOUND));
 
         Homework homework = homeworkService.getHomeworkFromDB(request.getHomeworkId());
-        if(homework == null) {
-            return;
-        }
 
         lesson.setHomework(homework);
         lessonRepository.save(lesson);
     }
 
     public HomeworkInfoResponse getLessonHomework(Long id) {
-        Lesson lesson = lessonRepository.findById(id).orElse(null);
-        if(lesson == null) {
-            return null;
-        }
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Lesson not found", HttpStatus.NOT_FOUND));
 
         return mapper.convertValue(lesson.getHomework(), HomeworkInfoResponse.class);
     }
 
     public void markGivenLesson(Long id) {
-        Lesson lesson = lessonRepository.findById(id).orElse(null);
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Lesson not found", HttpStatus.NOT_FOUND));
         lesson.setStatus(LessonStatus.GIVEN);
         lesson.setUpdatedAt(LocalDateTime.now());
         lessonRepository.save(lesson);
     }
 
     public void markPaidLesson(Long id) {
-        Lesson lesson = lessonRepository.findById(id).orElse(null);
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Lesson not found", HttpStatus.NOT_FOUND));
         lesson.setStatus(LessonStatus.PAID);
         lesson.setUpdatedAt(LocalDateTime.now());
         lessonRepository.save(lesson);

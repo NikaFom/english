@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.Goal;
 import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.GoalRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -45,7 +47,8 @@ public class GoalService {
     }
 
     public Goal getGoalFromDB(Long id) {
-        return goalRepository.findById(id).orElse(new Goal());
+        return goalRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Goal not found", HttpStatus.NOT_FOUND));
     }
 
     public GoalInfoResponse updateGoal(Long id, GoalInfoRequest request) {
@@ -87,15 +90,10 @@ public class GoalService {
     }
 
     public void addGoalToStudent(GoalToStudentRequest request) {
-        Goal goal = goalRepository.findById(request.getGoalId()).orElse(null);
-        if(goal == null) {
-            return;
-        }
+        Goal goal = goalRepository.findById(request.getGoalId())
+                .orElseThrow(() -> new CustomException("Goal not found", HttpStatus.NOT_FOUND));
 
         Student student = studentService.getStudentFromDB(request.getStudentId());
-        if(student == null) {
-            return;
-        }
 
         goal.setStudent(student);
         goalRepository.save(goal);
@@ -108,7 +106,8 @@ public class GoalService {
     }
 
     public void markAccomplishedGoal(Long id) {
-        Goal goal = goalRepository.findById(id).orElse(null);
+        Goal goal = goalRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Goal not found", HttpStatus.NOT_FOUND));
         goal.setStatus(GoalStatus.ACCOMPLISHED);
         goal.setUpdatedAt(LocalDateTime.now());
         goalRepository.save(goal);

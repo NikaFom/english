@@ -1,6 +1,7 @@
 package com.nikafom.englishAssistant.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikafom.englishAssistant.exceptions.CustomException;
 import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.entity.User;
 import com.nikafom.englishAssistant.model.db.repository.StudentRepository;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -32,13 +34,17 @@ public class StudentService {
     private final UserService userService;
 
     public StudentInfoResponse createStudent(@Valid StudentInfoRequest request) {
-        if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
-            return null;
-        }
+        validatePhoneNumber(request);
+        studentRepository.findByPhoneNumber(request.getPhoneNumber())
+                        .ifPresent(student -> {
+                            throw new CustomException(String.format("Student with phone number: %s already exists", request.getPhoneNumber()), HttpStatus.BAD_REQUEST);
+                        });
 
-        if(!EmailValidator.getInstance().isValid(request.getEmail())) {
-            return null;
-        }
+        validateEmail(request);
+        studentRepository.findByEmailIgnoreCase(request.getEmail())
+                .ifPresent(student -> {
+                    throw new CustomException(String.format("Student with email: %s already exists", request.getEmail()), HttpStatus.BAD_REQUEST);
+                });
 
         Student student = mapper.convertValue(request, Student.class);
         student.setCreatedAt(LocalDateTime.now());
@@ -47,6 +53,18 @@ public class StudentService {
         Student savedStudent = studentRepository.save(student);
 
         return mapper.convertValue(savedStudent, StudentInfoResponse.class);
+    }
+
+    private void validatePhoneNumber(StudentInfoRequest request) {
+        if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
+            throw new CustomException("Invalid phone number format", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private void validateEmail(StudentInfoRequest request) {
+        if(!EmailValidator.getInstance().isValid(request.getEmail())) {
+            throw new CustomException("Invalid email format", HttpStatus.BAD_REQUEST);
+        }
     }
 
     public StudentInfoResponse getStudent(Long id) {
@@ -59,13 +77,8 @@ public class StudentService {
     }
 
     public StudentInfoResponse updateStudent(Long id, @Valid StudentInfoRequest request) {
-        if(!request.getPhoneNumber().matches("^\\+79[0-9]{9}$")) {
-            return null;
-        }
-
-        if(!EmailValidator.getInstance().isValid(request.getEmail())) {
-            return null;
-        }
+        validatePhoneNumber(request);
+        validateEmail(request);
 
         Student student = getStudentFromDB(id);
 
@@ -106,15 +119,10 @@ public class StudentService {
     }
 
     public void addStudentToUser(StudentToUserRequest request) {
-        Student student = studentRepository.findById(request.getStudentId()).orElse(null);
-        if(student == null) {
-            return;
-        }
+        Student student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new CustomException("Student not found", HttpStatus.NOT_FOUND));
 
         User user = userService.getUserFromDB(request.getUserId());
-        if(user == null) {
-            return;
-        }
 
         student.setUser(user);
         studentRepository.save(student);
