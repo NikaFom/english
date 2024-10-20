@@ -8,12 +8,16 @@ import com.nikafom.englishAssistant.model.dto.request.EnglishLevelInfoRequest;
 import com.nikafom.englishAssistant.model.dto.request.LevelToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.EnglishLevelInfoResponse;
 import com.nikafom.englishAssistant.model.enums.EnglishLevelStatus;
+import com.nikafom.englishAssistant.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,10 +75,20 @@ public class EnglishLevelService {
         englishLevelRepository.save(englishLevel);
     }
 
-    public List<EnglishLevelInfoResponse> getAllEnglishLevels() {
-        return englishLevelRepository.findAll().stream()
+    public Page<EnglishLevelInfoResponse> getAllEnglishLevels(Integer page, Integer perPage, String sort, Sort.Direction order, String filter) {
+        Pageable pageRequest = PaginationUtil.getPageRequest(page, perPage, sort, order);
+
+        Page<EnglishLevel> allEnglishLevels;
+        if(filter == null) {
+            allEnglishLevels = englishLevelRepository.findAllByStatusNot(pageRequest, EnglishLevelStatus.DELETED);
+        } else {
+            allEnglishLevels = englishLevelRepository.findAllByStatusNotFiltered(pageRequest, EnglishLevelStatus.DELETED, filter.toUpperCase());
+        }
+
+        List<EnglishLevelInfoResponse> content = allEnglishLevels.stream()
                 .map(englishLevel -> mapper.convertValue(englishLevel, EnglishLevelInfoResponse.class))
                 .collect(Collectors.toList());
+        return new PageImpl<>(content, pageRequest, allEnglishLevels.getTotalElements());
     }
 
     public void addEnglishLevelToStudent(LevelToStudentRequest request) {

@@ -7,6 +7,8 @@ import com.nikafom.englishAssistant.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,8 +47,13 @@ public class PaymentController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить список оплат")
-    public List<PaymentInfoResponse> getAllPayments() {
-        return paymentService.getAllPayments();
+    public Page<PaymentInfoResponse> getAllPayments(@RequestParam(defaultValue = "1") Integer page,
+                                                    @RequestParam(defaultValue = "10") Integer perPage,
+                                                    @RequestParam(defaultValue = "lessonPrice") String sort,
+                                                    @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                                    @RequestParam(required = false) String filter
+    ) {
+        return paymentService.getAllPayments(page, perPage, sort, order, filter);
     }
 
     @PostMapping("/paymentToStudent")

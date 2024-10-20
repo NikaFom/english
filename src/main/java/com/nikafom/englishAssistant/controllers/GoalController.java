@@ -50,7 +50,7 @@ public class GoalController {
     public Page<GoalInfoResponse> getAllGoals(@RequestParam(defaultValue = "1") Integer page,
                                               @RequestParam(defaultValue = "10") Integer perPage,
                                               @RequestParam(defaultValue = "date") String sort,
-                                              @RequestParam(defaultValue = "ASC")Sort.Direction order,
+                                              @RequestParam(defaultValue = "ASC") Sort.Direction order,
                                               @RequestParam(required = false) String filter
     ) {
         return goalService.getAllGoals(page, perPage,sort, order, filter);

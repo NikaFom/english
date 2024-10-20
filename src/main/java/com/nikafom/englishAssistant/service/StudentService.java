@@ -8,14 +8,18 @@ import com.nikafom.englishAssistant.model.dto.request.StudentInfoRequest;
 import com.nikafom.englishAssistant.model.dto.request.StudentToUserRequest;
 import com.nikafom.englishAssistant.model.dto.response.StudentInfoResponse;
 import com.nikafom.englishAssistant.model.enums.StudentStatus;
+import com.nikafom.englishAssistant.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,10 +89,20 @@ public class StudentService {
         studentRepository.save(student);
     }
 
-    public List<StudentInfoResponse> getAllStudents() {
-        return studentRepository.findAll().stream()
+    public Page<StudentInfoResponse> getAllStudents(Integer page, Integer perPage, String sort, Sort.Direction order, String filter) {
+        Pageable pageRequest = PaginationUtil.getPageRequest(page, perPage, sort, order);
+
+        Page<Student> allStudents;
+        if(filter == null) {
+            allStudents = studentRepository.findAllByStatusNot(pageRequest, StudentStatus.DELETED);
+        } else {
+            allStudents = studentRepository.findAllByStatusNotFiltered(pageRequest, StudentStatus.DELETED, filter.toUpperCase());
+        }
+
+        List<StudentInfoResponse> content = allStudents.getContent().stream()
                 .map(student -> mapper.convertValue(student, StudentInfoResponse.class))
                 .collect(Collectors.toList());
+        return new PageImpl<>(content, pageRequest, allStudents.getTotalElements());
     }
 
     public void addStudentToUser(StudentToUserRequest request) {

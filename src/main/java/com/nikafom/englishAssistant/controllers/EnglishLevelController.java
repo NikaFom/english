@@ -7,6 +7,8 @@ import com.nikafom.englishAssistant.service.EnglishLevelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,8 +47,13 @@ public class EnglishLevelController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить список уровней английского")
-    public List<EnglishLevelInfoResponse> getAllEnglishLevels() {
-        return englishLevelService.getAllEnglishLevels();
+    public Page<EnglishLevelInfoResponse> getAllEnglishLevels(@RequestParam(defaultValue = "1") Integer page,
+                                                              @RequestParam(defaultValue = "10") Integer perPage,
+                                                              @RequestParam(defaultValue = "englishLevel") String sort,
+                                                              @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                                              @RequestParam(required = false) String filter
+    ) {
+        return englishLevelService.getAllEnglishLevels(page, perPage, sort, order, filter);
     }
 
     @PostMapping("/englishLevelToStudent")

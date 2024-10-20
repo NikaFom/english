@@ -8,12 +8,16 @@ import com.nikafom.englishAssistant.model.dto.request.HomeworkInfoRequest;
 import com.nikafom.englishAssistant.model.dto.request.HomeworkToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.HomeworkInfoResponse;
 import com.nikafom.englishAssistant.model.enums.HomeworkStatus;
+import com.nikafom.englishAssistant.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,10 +69,20 @@ public class HomeworkService {
         homeworkRepository.save(homework);
     }
 
-    public List<HomeworkInfoResponse> getAllHomework() {
-        return homeworkRepository.findAll().stream()
+    public Page<HomeworkInfoResponse> getAllHomework(Integer page, Integer perPage, String sort, Sort.Direction order, String filter) {
+        Pageable pageRequest = PaginationUtil.getPageRequest(page, perPage, sort, order);
+
+        Page<Homework> allHomework;
+        if(filter == null) {
+            allHomework = homeworkRepository.findAll(pageRequest);
+        } else {
+            allHomework = homeworkRepository.findAllPageableFiltered(pageRequest, filter.toUpperCase());
+        }
+
+        List<HomeworkInfoResponse> content = allHomework.getContent().stream()
                 .map(homework -> mapper.convertValue(homework, HomeworkInfoResponse.class))
                 .collect(Collectors.toList());
+        return new PageImpl<>(content, pageRequest, allHomework.getTotalElements());
     }
 
     public void addHomeworkToStudent(HomeworkToStudentRequest request) {

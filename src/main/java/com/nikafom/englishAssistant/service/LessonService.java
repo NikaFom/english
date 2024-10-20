@@ -6,19 +6,21 @@ import com.nikafom.englishAssistant.model.db.entity.Lesson;
 import com.nikafom.englishAssistant.model.db.entity.Student;
 import com.nikafom.englishAssistant.model.db.repository.LessonRepository;
 import com.nikafom.englishAssistant.model.dto.request.HomeworkToLessonRequest;
-import com.nikafom.englishAssistant.model.dto.request.HomeworkToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.request.LessonInfoRequest;
 import com.nikafom.englishAssistant.model.dto.request.LessonToStudentRequest;
 import com.nikafom.englishAssistant.model.dto.response.HomeworkInfoResponse;
 import com.nikafom.englishAssistant.model.dto.response.LessonInfoResponse;
 import com.nikafom.englishAssistant.model.enums.LessonStatus;
+import com.nikafom.englishAssistant.utils.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,10 +74,20 @@ public class LessonService {
         lessonRepository.save(lesson);
     }
 
-    public List<LessonInfoResponse> getAllLessons() {
-        return lessonRepository.findAll().stream()
+    public Page<LessonInfoResponse> getAllLessons(Integer page, Integer perPage, String sort, Sort.Direction order, String filter) {
+        Pageable pageRequest = PaginationUtil.getPageRequest(page, perPage, sort, order);
+
+        Page<Lesson> allLessons;
+        if(filter == null) {
+            allLessons = lessonRepository.findAll(pageRequest);
+        } else {
+            allLessons = lessonRepository.findAllPageableFiltered(pageRequest, filter.toUpperCase());
+        }
+
+        List<LessonInfoResponse> content = allLessons.getContent().stream()
                 .map(lesson -> mapper.convertValue(lesson, LessonInfoResponse.class))
                 .collect(Collectors.toList());
+        return new PageImpl<>(content, pageRequest, allLessons.getTotalElements());
     }
 
     public void addLessonToStudent(LessonToStudentRequest request) {

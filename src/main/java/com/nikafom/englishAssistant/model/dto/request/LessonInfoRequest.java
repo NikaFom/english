@@ -18,4 +18,5 @@ public class LessonInfoRequest {
     LocalDate date;
     LocalTime time;
     Integer lessonDuration;
+    LessonStatus status;
 }

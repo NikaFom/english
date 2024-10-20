@@ -9,6 +9,8 @@ import com.nikafom.englishAssistant.service.LessonService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,8 +49,13 @@ public class LessonController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить список занятий")
-    public List<LessonInfoResponse> getAllLessons() {
-        return lessonService.getAllLessons();
+    public Page<LessonInfoResponse> getAllLessons(@RequestParam(defaultValue = "1") Integer page,
+                                                  @RequestParam(defaultValue = "10") Integer perPage,
+                                                  @RequestParam(defaultValue = "date") String sort,
+                                                  @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                                  @RequestParam(required = false) String filter
+    ) {
+        return lessonService.getAllLessons(page, perPage, sort, order, filter);
     }
 
     @PostMapping("/lessonToStudent")

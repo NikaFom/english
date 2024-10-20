@@ -7,6 +7,8 @@ import com.nikafom.englishAssistant.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -46,8 +48,13 @@ public class StudentController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить список учеников")
-    public List<StudentInfoResponse> getAllStudents() {
-        return studentService.getAllStudents();
+    public Page<StudentInfoResponse> getAllStudents(@RequestParam(defaultValue = "1") Integer page,
+                                                    @RequestParam(defaultValue = "10") Integer perPage,
+                                                    @RequestParam(defaultValue = "name") String sort,
+                                                    @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                                    @RequestParam(required = false) String filter
+    ) {
+        return studentService.getAllStudents(page, perPage, sort, order, filter);
     }
 
     @PostMapping("/studentToUser")

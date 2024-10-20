@@ -7,6 +7,8 @@ import com.nikafom.englishAssistant.service.HomeworkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,8 +47,13 @@ public class HomeworkController {
 
     @GetMapping("/all")
     @Operation(summary = "Получить список домашних заданий")
-    public List<HomeworkInfoResponse> getAllHomework() {
-        return homeworkService.getAllHomework();
+    public Page<HomeworkInfoResponse> getAllHomework(@RequestParam(defaultValue = "1") Integer page,
+                                                     @RequestParam(defaultValue = "10") Integer perPage,
+                                                     @RequestParam(defaultValue = "date") String sort,
+                                                     @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                                     @RequestParam(required = false) String filter
+    ) {
+        return homeworkService.getAllHomework(page, perPage, sort, order, filter);
     }
 
     @PostMapping("/homeworkToStudent")
