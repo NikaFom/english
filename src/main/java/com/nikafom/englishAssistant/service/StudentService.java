@@ -73,7 +73,8 @@ public class StudentService {
     }
 
     public Student getStudentFromDB(Long id) {
-        return studentRepository.findById(id).orElse(new Student());
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Student not found", HttpStatus.NOT_FOUND));
     }
 
     public StudentInfoResponse updateStudent(Long id, @Valid StudentInfoRequest request) {
@@ -129,7 +130,9 @@ public class StudentService {
     }
 
     public List<StudentInfoResponse> getUserStudents(Long id) {
-        return studentRepository.findAllByUserId(id).stream()
+        User user = userService.getUserFromDB(id);
+
+        return studentRepository.findAllByUserId(user.getId()).stream()
                 .map(student -> mapper.convertValue(student, StudentInfoResponse.class))
                 .collect(Collectors.toList());
     }

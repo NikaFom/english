@@ -99,7 +99,9 @@ public class HomeworkService {
     }
 
     public List<HomeworkInfoResponse> getStudentHomework(Long id) {
-        return homeworkRepository.findAllByStudentId(id).stream()
+        Student student = studentService.getStudentFromDB(id);
+
+        return homeworkRepository.findAllByStudentId(student.getId()).stream()
                 .map(homework -> mapper.convertValue(homework, HomeworkInfoResponse.class))
                 .collect(Collectors.toList());
     }

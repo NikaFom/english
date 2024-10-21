@@ -100,7 +100,9 @@ public class PaymentService {
     }
 
     public List<PaymentInfoResponse> getStudentPayments(Long id) {
-        return paymentRepository.findAllByStudentId(id).stream()
+        Student student = studentService.getStudentFromDB(id);
+
+        return paymentRepository.findAllByStudentId(student.getId()).stream()
                 .map(payment -> mapper.convertValue(payment, PaymentInfoResponse.class))
                 .collect(Collectors.toList());
     }

@@ -104,7 +104,9 @@ public class LessonService {
     }
 
     public List<LessonInfoResponse> getStudentLessons(Long id) {
-        return lessonRepository.findAllByStudentId(id).stream()
+        Student student = studentService.getStudentFromDB(id);
+
+        return lessonRepository.findAllByStudentId(student.getId()).stream()
                 .map(lesson -> mapper.convertValue(lesson, LessonInfoResponse.class))
                 .collect(Collectors.toList());
     }

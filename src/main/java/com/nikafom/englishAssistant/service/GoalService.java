@@ -80,7 +80,7 @@ public class GoalService {
         if(filter == null) {
             allGoals = goalRepository.findAll(pageRequest);
         } else {
-            allGoals = goalRepository.finaAllPageableFiltered(pageRequest, filter.toUpperCase());
+            allGoals = goalRepository.findAllPageableFiltered(pageRequest, filter.toUpperCase());
         }
 
         List<GoalInfoResponse> content = allGoals.getContent().stream()
@@ -100,7 +100,9 @@ public class GoalService {
     }
 
     public List<GoalInfoResponse> getStudentGoals(Long id) {
-        return goalRepository.findAllByStudentId(id).stream()
+        Student student = studentService.getStudentFromDB(id);
+
+        return goalRepository.findAllByStudentId(student.getId()).stream()
                 .map(goal -> mapper.convertValue(goal, GoalInfoResponse.class))
                 .collect(Collectors.toList());
     }

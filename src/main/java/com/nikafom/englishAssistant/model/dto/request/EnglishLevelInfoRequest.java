@@ -1,5 +1,6 @@
 package com.nikafom.englishAssistant.model.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nikafom.englishAssistant.model.enums.Level;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EnglishLevelInfoRequest {
     @NotEmpty
     String englishLevel;

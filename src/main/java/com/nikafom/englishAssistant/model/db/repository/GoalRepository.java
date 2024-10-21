@@ -15,5 +15,5 @@ public interface GoalRepository extends JpaRepository<Goal,Long> {
     List<Goal> findAllByStudentId(Long studentId);
 
     @Query("select g from Goal g where upper(cast(g.status as string)) like %:filter% or upper(g.description) like %:filter% or upper(g.type) like %:filter% or cast(g.date as string) like %:filter%")
-    Page<Goal> finaAllPageableFiltered(Pageable request, @Param("filter") String filter);
+    Page<Goal> findAllPageableFiltered(Pageable request, @Param("filter") String filter);
 }

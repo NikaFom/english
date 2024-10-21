@@ -105,7 +105,8 @@ public class EnglishLevelService {
     }
 
     public List<EnglishLevelInfoResponse> getStudentEnglishLevels(Long id) {
-        return englishLevelRepository.findAllByStudentId(id).stream()
+        Student student = studentService.getStudentFromDB(id);
+        return englishLevelRepository.findAllByStudentId(student.getId()).stream()
                 .map(englishLevel -> mapper.convertValue(englishLevel, EnglishLevelInfoResponse.class))
                 .collect(Collectors.toList());
     }
